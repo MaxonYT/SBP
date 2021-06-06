@@ -3,6 +3,7 @@
 #include <iostream>
 #include "olcPixelGameEngine.h" //890 строчка - функции для рисования
 
+#define PI 3.141592f
 #define FULLSCREEN 0
 
 struct Obj_t
@@ -35,6 +36,7 @@ private:
     unsigned int m_score = 0;
     float m_SpeedAmplifier = 120.0f; // old: 80.0f
     bool flag_torpeda = 0;
+    float phi = 0.0f; // phi is angle between OAa and OBb vectors.
 
     olc::vf2d m_BoatPos = olc::vf2d((ScreenWidth() / 2) + 316, 159); // olc::vf2d(ScreenWidth() - (ScreenWidth() * 4 / 5), ScreenHeight() - (ScreenHeight() * 4 / 5));
     olc::vf2d m_TorpPos = olc::vf2d(625, 675);
@@ -44,6 +46,11 @@ private:
 
     olc::vf2d m_CamPos = olc::vf2d(-1275 / 2, -675 / 2);
     olc::vf2d m_CamVel = olc::vf2d(0, 0);
+    olc::vf2d m_dot_CamCenter = olc::vf2d(637.5f, 337.5f); // B. B is starting center of camera, O is (ScreenWidth()/2, ScreenHeight()).
+    olc::vf2d OAa = olc::vf2d(0.0f, (ScreenHeight()/2 * -1.0f));
+    //olc::vf2d OAa = olc::vf2d(0, -1); // vector
+    olc::vf2d OBb = olc::vf2d(m_dot_CamCenter.x - (ScreenWidth() / 2), 
+        m_dot_CamCenter.y - ScreenHeight()); // vector
 
     Str_t str_score;
     Obj_t dyn_boat_1;
@@ -118,8 +125,31 @@ public:
     
     void Printinfo() {
         std::cout << "Torp pos: " << m_TorpPos << std::endl;
-        std::cout << "Boat pos: " << m_BoatPos << std::endl;
-        std::cout << "m_BoatPos.x + dyn_boat_1.source_size.x  * dyn_boat_1.scale.x: " << m_BoatPos.x + dyn_boat_1.source_size.x * dyn_boat_1.scale.x << std::endl;// -dyn_boat_1.source_pos.x << std::endl;
+        std::cout << "Torp vel: " << m_TorpVel << std::endl;
+        std::cout << "Phi: " << phi << std::endl;
+        std::cout << "OBb: " << OBb << std::endl;
+        std::cout << "m_dot_CamCenter: " << m_dot_CamCenter << std::endl;
+        std::cout << "m_CamVel: " << m_CamVel << std::endl << std::endl;
+        //std::cout << "Boat pos: " << m_BoatPos << std::endl;
+        //std::cout << "m_BoatPos.x + dyn_boat_1.source_size.x  * dyn_boat_1.scale.x: " << m_BoatPos.x + dyn_boat_1.source_size.x * dyn_boat_1.scale.x << std::endl;// -dyn_boat_1.source_pos.x << std::endl;
+    }
+
+    float ScalProd(olc::vf2d a, olc::vf2d b) {
+        return float((a.x * b.x) + (a.y * b.y));
+    }
+
+    float VecMod(olc::vf2d a) {
+        return float(sqrt(pow(a.x, 2) + pow(a.y, 2)));
+
+    }
+
+    float CalcPhi(olc::vf2d a, olc::vf2d b) {
+        if (m_dot_CamCenter.x >= ScreenWidth() / 2) {
+            return float(acos(ScalProd(a, b) / (VecMod(a) * VecMod(b))));
+        }
+        else if (m_dot_CamCenter.x <= ScreenWidth() / 2) {
+            return -1.0f * float(acos(ScalProd(a, b) / (VecMod(a) * VecMod(b))));
+        }
     }
 
     void MoveTorpeda(float fElapsedTime) {
@@ -137,6 +167,7 @@ public:
 
     void MoveCamera(float fElapsedTime) {
         m_CamPos += m_CamVel * m_SpeedAmplifier * fElapsedTime;
+        m_dot_CamCenter += m_CamVel * m_SpeedAmplifier * fElapsedTime;
         hg_prihole.pos = m_CamPos;
     }
 
@@ -183,10 +214,15 @@ public:
         else if (GetKey(olc::Key::DOWN).bHeld) {
             m_CamVel = olc::vf2d(0, 1); // D
         }
+        else {
+            m_CamVel = olc::vf2d(0, 0); // nothing is pressed
+        }
 
+        /*
         if (GetKey(olc::Key::DOWN).bHeld || GetKey(olc::Key::UP).bHeld || GetKey(olc::Key::LEFT).bHeld || GetKey(olc::Key::RIGHT).bHeld) {
             MoveCamera(fElapsedTime); // if something is pressed, change the CamPos
         }
+        */
     }
 
     void UpdateKeys(float fElapsedTime) {
@@ -194,7 +230,21 @@ public:
             olc_Terminate();
         }
         if (GetKey(olc::Key::SPACE).bPressed && !(flag_torpeda)) {
+            
+            OBb = olc::vf2d(m_dot_CamCenter.x - (ScreenWidth() / 2), m_dot_CamCenter.y - ScreenHeight());
+            phi = CalcPhi(OAa, OBb);
+
+            m_TorpVel = olc::vf2d(sin(phi), -cos(phi));
+
             flag_torpeda = 1;
+            /*
+            // ab = |a||b|cosф
+            // ab = x1x2+y1y2
+            // x1x2+y1y2 = |a||b|cosф
+            // cosф = (x1x2+y1y2) / |a||b|
+            // cosф = ScalProd(a, b) / VecMod(a)*VecMod(b)
+            // ф = acosф :c
+            */
         }
         UpdateCamKeys(fElapsedTime);
 
@@ -213,14 +263,6 @@ public:
         }
         if (GetKey(olc::Key::D).bHeld) {
             dyn_boat_1.center.y -= 5;
-        }
-        */
-        /*
-        if (GetKey(olc::Key::A).bHeld) {
-            DrawStatic(bg_dwater);
-        }
-        if (GetKey(olc::Key::Q).bHeld) {
-            DrawStatic(bg_uwater);
         }
         */
         
@@ -352,11 +394,13 @@ public:
         if (flag_torpeda) {
             DrawStatic(dyn_torpeda);
             MoveTorpeda(fElapsedTime);
+            //Printinfo();
         }
         DrawStatic(hg_prihole);
         DrawStringStatic(str_score);
 
         UpdateKeys(fElapsedTime);
+        MoveCamera(fElapsedTime);
         MoveBoats(fElapsedTime);
         
         
@@ -372,5 +416,5 @@ int main() {
     if (demo.Construct(1275, 675, 1, 1, FULLSCREEN)) // (demo.Construct(425, 225, 3, 3, FULLSCREEN))(demo.Construct(1275, 675, 1, 1, FULLSCREEN))
         demo.Start();
     return 0;
-
+    
 }

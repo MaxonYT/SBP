@@ -1,0 +1,13 @@
+﻿  main.cpp
+C:\Users\Maxim Zakariya\OneDrive\Documentos\GitHub\SBP\Sea Battle Project\Sea Battle Project v1.0\olcPixelGameEngine.h(2512,25): warning C4267: =: преобразование из "size_t" в "uint32_t"; возможна потеря данных
+C:\Users\Maxim Zakariya\OneDrive\Documentos\GitHub\SBP\Sea Battle Project\Sea Battle Project v1.0\main.cpp(39,57): warning C4244: аргумент: преобразование "int" в "T", возможна потеря данных
+          with
+          [
+              T=float
+          ]
+C:\Users\Maxim Zakariya\OneDrive\Documentos\GitHub\SBP\Sea Battle Project\Sea Battle Project v1.0\main.cpp(88,38): warning C4244: =: преобразование "int32_t" в "T", возможна потеря данных
+          with
+          [
+              T=float
+          ]
+  Sea Battle Project v1.0.vcxproj -> C:\Users\Maxim Zakariya\OneDrive\Documentos\GitHub\SBP\Sea Battle Project\x64\Debug\Sea Battle Project v1.0.exe

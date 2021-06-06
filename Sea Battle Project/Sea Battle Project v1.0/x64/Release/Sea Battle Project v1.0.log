@@ -5,13 +5,14 @@ C:\Users\Maxim Zakariya\OneDrive\Documentos\GitHub\SBP\Sea Battle Project\Sea Ba
           [
               T=float
           ]
-C:\Users\Maxim Zakariya\OneDrive\Documentos\GitHub\SBP\Sea Battle Project\Sea Battle Project v1.0\main.cpp(81,38): warning C4244: =: преобразование "int32_t" в "T", возможна потеря данных
+C:\Users\Maxim Zakariya\OneDrive\Documentos\GitHub\SBP\Sea Battle Project\Sea Battle Project v1.0\main.cpp(88,38): warning C4244: =: преобразование "int32_t" в "T", возможна потеря данных
           with
           [
               T=float
           ]
   Создание кода
-  Previous IPDB not found, fall back to full compilation.
-  All 1366 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  1 of 1368 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   Sea Battle Project v1.0.vcxproj -> C:\Users\Maxim Zakariya\OneDrive\Documentos\GitHub\SBP\Sea Battle Project\x64\Release\Sea Battle Project v1.0.exe

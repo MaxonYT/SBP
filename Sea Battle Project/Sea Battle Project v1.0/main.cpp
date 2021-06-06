@@ -33,14 +33,17 @@ private:
     //private class variables
 
     unsigned int m_score = 0;
-    float m_SpeedAmplifier = 80.0f;
+    float m_SpeedAmplifier = 120.0f; // old: 80.0f
     bool flag_torpeda = 0;
 
     olc::vf2d m_BoatPos = olc::vf2d((ScreenWidth() / 2) + 316, 159); // olc::vf2d(ScreenWidth() - (ScreenWidth() * 4 / 5), ScreenHeight() - (ScreenHeight() * 4 / 5));
-    olc::vf2d m_TorpPos = olc::vf2d(622, 675);
+    olc::vf2d m_TorpPos = olc::vf2d(625, 675);
 
     olc::vf2d m_TorpVel = olc::vf2d(0, -1);
     olc::vf2d m_BoatVel = olc::vf2d(1, 0);
+
+    olc::vf2d m_CamPos = olc::vf2d(-1275 / 2, -675 / 2);
+    olc::vf2d m_CamVel = olc::vf2d(0, 0);
 
     Str_t str_score;
     Obj_t dyn_boat_1;
@@ -48,6 +51,7 @@ private:
     Obj_t dyn_torpeda;
     Obj_t bg_uwater;
     Obj_t bg_dwater;
+    Obj_t hg_prihole;
 
 public:
     //public class variables
@@ -74,12 +78,17 @@ public:
             m_BoatPos.x = 0 - (dyn_boat_1.source_size.x * dyn_boat_1.scale.x);
         }
         */
+
+        // Boat crosses the screen borders
+
         if (m_BoatPos.x > ScreenWidth()) {
             m_BoatPos.x = dyn_boat_1.source_size.x * -1 * dyn_boat_1.scale.x;
         }
         if (m_BoatPos.x + dyn_boat_1.source_size.x * dyn_boat_1.scale.x < 0) {
             m_BoatPos.x = ScreenWidth();
         }
+
+        // Torpeda hits the boat
 
         if (flag_torpeda && m_TorpPos.y <= (m_BoatPos.y + 170) && m_TorpPos.x >= m_BoatPos.x && m_TorpPos.x <= (m_BoatPos.x + dyn_boat_1.source_size.x * dyn_boat_1.scale.x)){// - dyn_boat_1.source_pos.x)) {
             flag_torpeda = 0;
@@ -98,6 +107,7 @@ public:
             m_score++;
             str_score.sText = std::to_string(m_score);
         }
+
         else if (flag_torpeda && m_TorpPos.y <= (m_BoatPos.y + 125) && (m_TorpPos.x < m_BoatPos.x || m_TorpPos.x > m_BoatPos.x + dyn_boat_1.source_size.x * dyn_boat_1.scale.x)){// - dyn_boat_1.source_pos.x))) {
             //Printnuinfo();
             //std::cout << "miss\n";
@@ -125,6 +135,60 @@ public:
         m_SpeedAmplifier += 1.0f * fElapsedTime;
     }
 
+    void MoveCamera(float fElapsedTime) {
+        m_CamPos += m_CamVel * m_SpeedAmplifier * fElapsedTime;
+        hg_prihole.pos = m_CamPos;
+    }
+
+    void UpdateCamKeys(float fElapsedTime) {
+
+        // Camera Movement (CAUTION: EPILEPSY THREAT)
+
+        if ((GetKey(olc::Key::UP).bHeld) && (GetKey(olc::Key::DOWN).bHeld) && (GetKey(olc::Key::LEFT).bHeld)) {
+            m_CamVel = olc::vf2d(-1, 0); // U + D ++ L
+        }
+        else if ((GetKey(olc::Key::UP).bHeld) && (GetKey(olc::Key::DOWN).bHeld) && (GetKey(olc::Key::RIGHT).bHeld)) {
+            m_CamVel = olc::vf2d(1, 0); // U + D ++ R
+        }
+        else if ((GetKey(olc::Key::LEFT).bHeld) && (GetKey(olc::Key::RIGHT).bHeld) && (GetKey(olc::Key::DOWN).bHeld)) {
+            m_CamVel = olc::vf2d(0, 1); // L + R ++ D
+        }
+        else if ((GetKey(olc::Key::LEFT).bHeld) && (GetKey(olc::Key::RIGHT).bHeld) && (GetKey(olc::Key::UP).bHeld)) {
+            m_CamVel = olc::vf2d(0, -1); // L + R ++ U
+        }
+        else if (((GetKey(olc::Key::UP).bHeld) && (GetKey(olc::Key::DOWN).bHeld)) || ((GetKey(olc::Key::LEFT).bHeld) && (GetKey(olc::Key::RIGHT).bHeld))) {
+            m_CamVel = olc::vf2d(0, 0); // overloading keys?
+        }
+        else if ((GetKey(olc::Key::UP).bHeld) && (GetKey(olc::Key::RIGHT).bHeld)) {
+            m_CamVel = olc::vf2d(1, -1); // U ++ R
+        }
+        else if ((GetKey(olc::Key::UP).bHeld) && (GetKey(olc::Key::LEFT).bHeld)) {
+            m_CamVel = olc::vf2d(-1, -1); // U ++ L
+        }
+        else if ((GetKey(olc::Key::DOWN).bHeld) && (GetKey(olc::Key::RIGHT).bHeld)) {
+            m_CamVel = olc::vf2d(1, 1); // D ++ R
+        }
+        else if ((GetKey(olc::Key::DOWN).bHeld) && (GetKey(olc::Key::LEFT).bHeld)) {
+            m_CamVel = olc::vf2d(-1, 1); // D ++ L
+        }
+        else if (GetKey(olc::Key::RIGHT).bHeld) {
+            m_CamVel = olc::vf2d(1, 0); // R
+        }
+        else if (GetKey(olc::Key::LEFT).bHeld) {
+            m_CamVel = olc::vf2d(-1, 0); // L
+        }
+        else if (GetKey(olc::Key::UP).bHeld) {
+            m_CamVel = olc::vf2d(0, -1); // U
+        }
+        else if (GetKey(olc::Key::DOWN).bHeld) {
+            m_CamVel = olc::vf2d(0, 1); // D
+        }
+
+        if (GetKey(olc::Key::DOWN).bHeld || GetKey(olc::Key::UP).bHeld || GetKey(olc::Key::LEFT).bHeld || GetKey(olc::Key::RIGHT).bHeld) {
+            MoveCamera(fElapsedTime); // if something is pressed, change the CamPos
+        }
+    }
+
     void UpdateKeys(float fElapsedTime) {
         if (GetKey(olc::Key::ESCAPE).bPressed) {
             olc_Terminate();
@@ -132,6 +196,8 @@ public:
         if (GetKey(olc::Key::SPACE).bPressed && !(flag_torpeda)) {
             flag_torpeda = 1;
         }
+        UpdateCamKeys(fElapsedTime);
+
         /*
         if (GetKey(olc::Key::Q).bHeld) {
             dyn_boat_1.fAngle += float(3.14f * fElapsedTime * float(m_SpeedAmplifier) / 180.0);
@@ -208,7 +274,18 @@ public:
         SetDecalMode(olc::DecalMode::ILLUMINATE);
         auto tempDynImg1 = new olc::Sprite("textures/pboatpartial.png"); // partial boat img
         auto tempDynImg2 = new olc::Sprite("textures/torpeda.png"); // partial torpeda img
+        auto tempDynImg3 = new olc::Sprite("textures/prihole.png"); // eye-hole img
         auto tempBgImg = new olc::Sprite("textures/water.png"); // full water img
+
+        hg_prihole = {
+            std::make_shared<olc::Decal>(tempDynImg3),
+            {-1275/2, -675/2}, // otrisovka
+            {0, 0}, // part
+            {2550, 1350}, // size
+            {1.0f, 1.0f}, // scale
+            0.0f, // angle
+            {0, 0} // center
+        };
 
         bg_uwater = { // from (0, 0) 1275 x 329
             std::make_shared<olc::Decal>(tempBgImg),
@@ -245,7 +322,7 @@ public:
             m_TorpPos,
             {343, 0}, // s_pos
             {30, 338}, // s_size
-            { 0.54f, 0.54f},
+            { 0.54f, 0.25f},
             0.0f,
             {0, 0}
             // s_pos{343, 0} s_size{30, 338} - смотрит вверх;
@@ -276,6 +353,7 @@ public:
             DrawStatic(dyn_torpeda);
             MoveTorpeda(fElapsedTime);
         }
+        DrawStatic(hg_prihole);
         DrawStringStatic(str_score);
 
         UpdateKeys(fElapsedTime);
